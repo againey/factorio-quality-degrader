@@ -1,0 +1,8 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 24. 06. 2026
+  Features:
+    - Initial release
+    - The degrader, a 2x2 burner furnace for running quality degrading recipes
+    - Quality degrading recipes for all recyclable items to decrease quality by one level
+    - Quality module technology amended to also unlock the degrader

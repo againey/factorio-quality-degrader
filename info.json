@@ -1,0 +1,16 @@
+{
+	"name": "quality-degrader",
+	"version": "0.1.0",
+	"title": "Quality Degrader",
+	"description": "Adds a machine similar to the recycler that will downgrade any quality item placed into it by a single quality level.",
+	"author": "Andy Gainey",
+	"factorio_version": "2.1",
+	"dependencies": ["base >= 2.0", "quality >= 2.1", "recycler >= 2.1"],
+	"quality_required": true,
+	"space_travel_required": false,
+	"spoiling_required": false,
+	"freezing_required": false,
+	"segmented_units_required": false,
+	"expansion_shaders_required": false,
+	"expansion_required": false
+}
