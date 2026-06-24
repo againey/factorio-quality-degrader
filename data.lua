@@ -151,11 +151,13 @@ data:extend{
 		result_inventory_size = math.min(math.max(1, quality_count - 1), 12),
 		crafting_speed = 1.0,
 		source_inventory_size = 1,
+		max_health = 300,
 		custom_input_slot_tooltip_key = "degrader-input-slot-tooltip",
 		cant_insert_at_source_message_key = "inventory-restriction.cant-be-degraded",
 		vector_to_place_result = {-0.35, -1.3},
-		allowed_effects = {}, -- no beacon effects on the degrader
-		energy_usage = "200kW",
+		allowed_effects = {"speed", "consumption", "pollution"},
+		effect_receiver = {uses_module_effects = false, uses_beacon_effects = false, uses_surface_effects = true},
+		energy_usage = "90kW",
 
 		-- Everything below is inherited from the burner mining drill.
 		dying_explosion = "burner-mining-drill-explosion",
@@ -231,3 +233,5 @@ data:extend{
 		circuit_wire_max_distance = default_circuit_wire_max_distance
 	}
 }
+
+table.insert(data.raw["utility-constants"].default.factoriopedia_recycling_recipe_categories, "quality-degrading")

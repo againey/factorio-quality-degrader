@@ -230,9 +230,6 @@ local function count_quality_levels(first_quality_prototype, last_quality_protot
 end
 
 local second_level_quality_prototype = get_first_quality_prototype_with_level(1)
-local first_level_quality_prototype = get_one_level_worse_quality_prototype(second_level_quality_prototype)
-local last_level_quality_prototype = get_better_quality_prototype(second_level_quality_prototype)
-local next_to_last_level_quality_prototype = get_one_level_worse_quality_prototype(last_level_quality_prototype)
 
 local default_crafting_machine_tint = {primary = {0.125,0.125,0.125,0.125}, secondary = {0.125,0.125,0.125,0.125}, tertiary = {0.125,0.125,0.125,0.125}, quaternary = {0.125,0.125,0.125,0.125}}
 
@@ -261,7 +258,6 @@ local function generate_degrading_recipe_for_item(item, crafting_machine_tint, c
 				name = item.name,
 				amount = 1,
 				quality_min = second_level_quality_prototype.name,
-				quality_max = last_level_quality_prototype.name,
 			},
 		},
 		results =
@@ -270,14 +266,12 @@ local function generate_degrading_recipe_for_item(item, crafting_machine_tint, c
 				type = "item",
 				name = item.name,
 				amount = 1,
-				quality_min = first_level_quality_prototype.name,
-				quality_max = next_to_last_level_quality_prototype.name,
 				quality_change = -1,
 				percent_spoiled = get_recipe_percent_spoiled_for_item(item),
 			},
 		},
 		main_product = item.name,
-		energy_required = 1.25,
+		energy_required = 10,
 		crafting_machine_tint = crafting_machine_tint or default_crafting_machine_tint,
 		auto_recycle = false,
 		enabled = false,
