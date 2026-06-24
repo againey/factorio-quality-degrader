@@ -1,5 +1,6 @@
 --helpers.write_file("quality-degrader.txt", {"", "----------------------------------------\n"})
 
+require ("util")
 local entity_sounds = require("__base__.prototypes.entity.sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local hit_effects = require ("__base__.prototypes.entity.hit-effects")
@@ -8,30 +9,47 @@ local degrading = require("__quality-degrader__/degrading")
 
 local burner_mining_drill_entity_prototype = data.raw["mining-drill"]["burner-mining-drill"]
 
-local degrader_tint = {r=0.85, g=0.75, b=0.65}
-
-local function apply_tint_to_animation_direction(animation_direction, tint)
-	if animation_direction ~= nil and animation_direction.layers ~= nil then
-		for _, layer in ipairs(animation_direction.layers) do
-			if string.match(layer.filename, "-shadow.png") == nil then
-				layer.tint = tint
-			end
-		end
-	end
-end
+local degrader_tint = {r=1.0, g=0.8, b=0.6}
+local degrader_ground_tint = {r=1, g=1, b=1}
 
 local function apply_tint_to_graphic_set(graphic_set, tint)
 	if graphic_set.animation ~= nil then
-		for key, _ in pairs(graphic_set.animation) do
+		for _, animation_direction in pairs(graphic_set.animation) do
+			if animation_direction.layers ~= nil then
+				for _, layer in ipairs(animation_direction.layers) do
+					if string.match(layer.filename, "-shadow.png") == nil then
+						layer.tint = tint
+					end
+				end
+			end
 		end
-		apply_tint_to_animation_direction(graphic_set.animation.north, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.north_east, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.east, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.south_east, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.south, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.south_west, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.west, tint)
-		apply_tint_to_animation_direction(graphic_set.animation.north_west, tint)
+	end
+
+	return graphic_set
+end
+
+local function insert_layer_in_graphic_set(graphic_set, layer, index)
+	if graphic_set.animation ~= nil then
+		for _, animation_direction in pairs(graphic_set.animation) do
+			local layer_copy = table.deepcopy(layer)
+			if animation_direction.layers ~= nil then
+				local frame_count = animation_direction.layers[1].frame_count or 1
+				if animation_direction.layers[1].run_mode == "forward-then-backward" then
+					frame_count = frame_count * 2 - 2
+				end
+				layer_copy.frame_count = frame_count
+				if layer_copy.frame_count > 1 then
+					layer_copy.frame_sequence = {}
+					while #layer_copy.frame_sequence < layer_copy.frame_count do
+						table.insert(layer_copy.frame_sequence, 1)
+					end
+				end
+				table.insert(animation_direction.layers, index, layer_copy)
+			else
+				layer_copy.frame_count = 1
+				animation_direction.layers = {layer_copy}
+			end
+		end
 	end
 
 	return graphic_set
@@ -56,7 +74,7 @@ data:extend{
 			},
 		},
 		subgroup = "smelting-machine",
-		order = "e[degrader]",
+		order = "d[quality-degrader]",
 		inventory_move_sound = item_sounds.drill_inventory_move,
 		pick_sound = item_sounds.drill_inventory_pickup,
 		drop_sound = item_sounds.drill_inventory_move,
@@ -80,17 +98,53 @@ data:extend{
 		enabled = false,
 	},
 	{
+		type = "corpse",
+		name = "degrader-remnants",
+		icons =
+		{
+			{
+				icon = "__base__/graphics/icons/burner-mining-drill.png",
+				tint = degrader_tint,
+			},
+		},
+		flags = {"placeable-neutral", "not-on-map"},
+		hidden_in_factoriopedia = true,
+		subgroup = "smelting-machine-remnants",
+		order = "e[quality-degrader]",
+		collision_box = {{-0.4, -0.4}, {0.4, 0.4}},
+		selection_box = {{-1, -1}, {1, 1}},
+		tile_width = 2,
+		tile_height = 2,
+		selectable_in_game = false,
+		time_before_removed = 60 * 60 * 15, -- 15 minutes
+		expires = false,
+		final_render_layer = "remnants",
+		remove_on_tile_placement = false,
+		animation =
+		{
+			filename = "__base__/graphics/entity/burner-mining-drill/remnants/burner-mining-drill-remnants.png",
+			line_length = 1,
+			width = 272,
+			height = 234,
+			direction_count = 1,
+			shift = util.by_pixel(-0.5, -4.5),
+			scale = 0.5,
+			tint = degrader_tint,
+		},
+	},
+	{
 		type = "furnace",
 		name = "degrader",
 		icons =
 		{
 			{
 				icon = "__base__/graphics/icons/burner-mining-drill.png",
-				tint = {r=1, g=0.5, b=0, a=0.25},
+				tint = degrader_tint,
 			},
 		},
 		flags = {"placeable-neutral", "placeable-player", "player-creation"},
 		fast_replaceable_group = "degrader",
+		corpse = "degrader-remnants",
 		minable = {mining_time = 0.2, result = "degrader"},
 
 		crafting_categories = {"quality-degrading"},
@@ -99,12 +153,11 @@ data:extend{
 		source_inventory_size = 1,
 		custom_input_slot_tooltip_key = "degrader-input-slot-tooltip",
 		cant_insert_at_source_message_key = "inventory-restriction.cant-be-degraded",
-		vector_to_place_result = {-0.5, -1.3},
+		vector_to_place_result = {-0.35, -1.3},
 		allowed_effects = {}, -- no beacon effects on the degrader
-		energy_usage = "300kW",
+		energy_usage = "200kW",
 
 		-- Everything below is inherited from the burner mining drill.
-		corpse = "burner-mining-drill-remnants",
 		dying_explosion = "burner-mining-drill-explosion",
 		collision_box = {{-0.7, -0.7}, {0.7, 0.7}},
 		selection_box = {{-1, -1}, {1, 1}},
@@ -135,12 +188,46 @@ data:extend{
 			}
 		},
 		use_mirroring = true,
-		graphics_set = apply_tint_to_graphic_set(table.deepcopy(burner_mining_drill_entity_prototype.graphics_set), degrader_tint),
-		graphics_set_flipped = apply_tint_to_graphic_set(table.deepcopy(burner_mining_drill_entity_prototype.graphics_set_flipped), degrader_tint),
+		graphics_set = insert_layer_in_graphic_set
+		(
+			apply_tint_to_graphic_set
+			(
+				table.deepcopy(burner_mining_drill_entity_prototype.graphics_set),
+				degrader_tint
+			),
+			{
+				filename = "__base__/graphics/entity/burner-mining-drill/remnants/burner-mining-drill-remnants.png",
+				line_length = 1,
+				width = 272,
+				height = 234,
+				direction_count = 1,
+				shift = util.by_pixel(-0.5, -4.5),
+				scale = 0.5,
+				tint = degrader_ground_tint,
+			},
+			1
+		),
+		graphics_set_flipped = insert_layer_in_graphic_set
+		(
+			apply_tint_to_graphic_set
+			(
+				table.deepcopy(burner_mining_drill_entity_prototype.graphics_set_flipped),
+				degrader_tint
+			),
+			{
+				filename = "__base__/graphics/entity/burner-mining-drill/remnants/burner-mining-drill-remnants.png",
+				line_length = 1,
+				width = 272,
+				height = 234,
+				direction_count = 1,
+				shift = util.by_pixel(-0.5, -4.5),
+				scale = 0.5,
+				tint = degrader_ground_tint,
+			},
+			1
+		),
 
 		circuit_connector = circuit_connector_definitions["burner-mining-drill"],
 		circuit_wire_max_distance = default_circuit_wire_max_distance
 	}
 }
-
---table.insert(data.raw["utility-constants"].default.factoriopedia_recycling_recipe_categories, "quality-degrading")

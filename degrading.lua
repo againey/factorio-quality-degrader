@@ -105,21 +105,74 @@ local function get_recipe_percent_spoiled_for_item(item)
 	end
 end
 
-local function get_quality_module_technology_effects()
+local root_quality_technologies = nil
+local function get_all_root_quality_technologies()
+	if root_quality_technologies ~= nil then return root_quality_technologies end
+
 	local technologies = data.raw.technology
-	if technologies == nil then return nil end
-	local quality_module_technology = technologies["quality-module"]
-	if quality_module_technology == nil then return nil end
-	return quality_module_technology.effects
+	local qualities = data.raw.quality
+	if technologies == nil or qualities == nil then return {} end
+
+	local quality_technologies = {}
+	for technology_name, technology_prototype in pairs(technologies) do
+		if technology_prototype.effects ~= nil then
+			for _, effect in ipairs(technology_prototype.effects) do
+				if effect.type == "unlock-quality" then
+					local quality_prototype = qualities[effect.quality]
+					if quality_prototype ~= nil and quality_prototype.level > 0 then
+						quality_technologies[technology_name] = technology_prototype
+						break
+					end
+				end
+			end
+		end
+	end
+
+	--true if is downstream from quality technology, false if not
+	local technology_states = {}
+	local function is_downstream_from_quality_technology(technology_prototype)
+		if technology_prototype.prerequisites ~= nil then
+			for _, prerequisite in ipairs(technology_prototype.prerequisites) do
+				local state = technology_states[prerequisite]
+				if state ~= nil then
+					return state
+				elseif quality_technologies[prerequisite] ~= nil then
+					technology_states[prerequisite] = true
+					return true
+				else
+					state = is_downstream_from_quality_technology(technologies[prerequisite])
+					technology_states[prerequisite] = state
+					return state
+				end
+			end
+		end
+		return false
+	end
+
+	root_quality_technologies = {}
+	for technology_name, technology_prototype in pairs(quality_technologies) do
+		if is_downstream_from_quality_technology(technology_prototype) == false then
+			table.insert(root_quality_technologies, technology_prototype)
+		end
+	end
+	
+	return root_quality_technologies
 end
 
-local quality_module_technology_effects = get_quality_module_technology_effects()
+
 local function add_degrading_recipe_unlock(recipe)
-	if quality_module_technology_effects == nil then
+	if #root_quality_technologies == 0 then
 		recipe.enabled = true
-		return
+	else
+		for _, technology_prototype in ipairs(root_quality_technologies) do
+			local effect = { type = "unlock-recipe", recipe = recipe.name, hidden = true }
+			if technology_prototype.effects ~= nil then
+				table.insert(technology_prototype.effects, effect)
+			else
+				technology_prototype.effects = {effect}
+			end
+		end
 	end
-	table.insert(quality_module_technology_effects, { type = "unlock-recipe", recipe = recipe.name, hidden = true })
 end
 
 local function get_first_quality_prototype_with_level(quality_level)
@@ -181,7 +234,9 @@ local first_level_quality_prototype = get_one_level_worse_quality_prototype(seco
 local last_level_quality_prototype = get_better_quality_prototype(second_level_quality_prototype)
 local next_to_last_level_quality_prototype = get_one_level_worse_quality_prototype(last_level_quality_prototype)
 
-local function generate_degrading_recipe_for_item(item, recipe, can_degrade_item)
+local default_crafting_machine_tint = {primary = {0.125,0.125,0.125,0.125}, secondary = {0.125,0.125,0.125,0.125}, tertiary = {0.125,0.125,0.125,0.125}, quaternary = {0.125,0.125,0.125,0.125}}
+
+local function generate_degrading_recipe_for_item(item, crafting_machine_tint, can_degrade_item)
 	--helpers.write_file("quality-degrader.txt", {"", "Considering item " .. item.name .. "\n"}, true)
 
 	local can_degrade_item = can_degrade_item or default_can_degrade_item
@@ -222,8 +277,8 @@ local function generate_degrading_recipe_for_item(item, recipe, can_degrade_item
 			},
 		},
 		main_product = item.name,
-		energy_required = 0.25,
-		crafting_machine_tint = recipe.crafting_machine_tint,
+		energy_required = 1.25,
+		crafting_machine_tint = crafting_machine_tint or default_crafting_machine_tint,
 		auto_recycle = false,
 		enabled = false,
 		hidden = true,
@@ -253,7 +308,7 @@ local function generate_degrading_recipe_for_recipe(recipe, can_degrade_recipe, 
 
 	local item = get_recipe_ingredient_item(recipe)
 	if item ~= nil then
-		generate_degrading_recipe_for_item(item, recipe, can_degrade_item)
+		generate_degrading_recipe_for_item(item, recipe.crafting_machine_tint, can_degrade_item)
 	end
 end
 
@@ -263,6 +318,8 @@ lib.get_first_quality_prototype_with_level = get_first_quality_prototype_with_le
 lib.get_better_quality_prototype = get_better_quality_prototype
 lib.get_one_level_worse_quality_prototype = get_one_level_worse_quality_prototype
 lib.count_quality_levels = count_quality_levels
-lib.generate_degrading_recipe = generate_degrading_recipe_for_recipe
+lib.get_all_root_quality_technologies = get_all_root_quality_technologies
+lib.generate_degrading_recipe_for_item = generate_degrading_recipe_for_item
+lib.generate_degrading_recipe_for_recipe = generate_degrading_recipe_for_recipe
 
 return lib
