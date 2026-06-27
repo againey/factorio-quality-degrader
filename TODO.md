@@ -1,5 +1,9 @@
 # TODO
 
+## Features
+
+- Support for circuit connections and control
+
 ## Compatibility
 
 - Test with mods that add more quality levels
