@@ -3,6 +3,12 @@ Version: 0.2.0
 Date: 27. 06. 2026
   Changes:
     - Degrader recipe takes burner mining drill and quality modules, fewer other ingredients
+  Features:
+    - Support for multiple independent quality sets
+  Bugfixes:
+    - Degrader will determine output slot count after all quality prototypes have been loaded
+  Modding:
+    - Can explicitly generate degrading recipes for non-recycling recipes
 ---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 24. 06. 2026

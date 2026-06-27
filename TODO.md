@@ -5,7 +5,6 @@
 - Test with mods that add more quality levels
 - Test with mods that add alternative quality levels
 - Test with mods that add custom recycle recipes
-- Find all independent quality sets and create recipes for each of them
 
 ## Ideas
 

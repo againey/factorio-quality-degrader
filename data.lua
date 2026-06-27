@@ -5,8 +5,6 @@ local entity_sounds = require("__base__.prototypes.entity.sounds")
 local item_sounds = require("__base__.prototypes.item_sounds")
 local hit_effects = require ("__base__.prototypes.entity.hit-effects")
 
-local degrading = require("__quality-degrader__/degrading")
-
 local burner_mining_drill_entity_prototype = data.raw["mining-drill"]["burner-mining-drill"]
 
 local degrader_tint = {r=1.0, g=0.8, b=0.6}
@@ -54,9 +52,6 @@ local function insert_layer_in_graphic_set(graphic_set, layer, index)
 
 	return graphic_set
 end
-
-local second_level_quality_prototype = degrading.get_first_quality_prototype_with_level(1)
-local quality_count = degrading.count_quality_levels(second_level_quality_prototype) + 1
 
 data:extend{
 	{
@@ -148,7 +143,7 @@ data:extend{
 		minable = {mining_time = 0.2, result = "degrader"},
 
 		crafting_categories = {"quality-degrading"},
-		result_inventory_size = math.min(math.max(1, quality_count - 1), 12),
+		result_inventory_size = 4, --will be amended later, once all qualities have been registered
 		crafting_speed = 1.0,
 		source_inventory_size = 1,
 		max_health = 300,
