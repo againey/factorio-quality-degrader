@@ -2,7 +2,7 @@
 	"name": "quality-degrader",
 	"version": "0.2.0",
 	"title": "Quality Degrader",
-	"description": "Adds a machine that will downgrade any quality item placed into it by a single quality level.",
+	"description": "Facilitate early-game quality with a machine that downgrades quality items by a single quality level. It's like manufacturing with mixed quality ingredients, but only if you manage the logistics puzzle effectively.",
 	"author": "Andy Gainey",
 	"factorio_version": "2.1",
 	"dependencies": ["base >= 2.0", "quality >= 2.1", "recycler >= 2.1"],
