@@ -1,6 +1,6 @@
 {
 	"name": "quality-degrader",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"title": "Quality Degrader",
 	"description": "Adds a machine that will downgrade any quality item placed into it by a single quality level.",
 	"author": "Andy Gainey",

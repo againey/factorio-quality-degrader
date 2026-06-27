@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 27. 06. 2026
+  Changes:
+    - Degrader recipe takes burner mining drill and quality modules, fewer other ingredients
+---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 24. 06. 2026
   Features:

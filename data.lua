@@ -88,10 +88,10 @@ data:extend{
 		name = "degrader",
 		ingredients =
 		{
-			{type = "item", name = "advanced-circuit", amount = 10},
-			{type = "item", name = "steel-plate", amount = 40},
-			{type = "item", name = "iron-gear-wheel", amount = 10},
-			{type = "item", name = "stone-brick", amount = 20}
+			{type = "item", name = "steel-plate", amount = 10},
+			{type = "item", name = "stone-brick", amount = 10},
+			{type = "item", name = "quality-module", amount = 2},
+			{type = "item", name = "burner-mining-drill", amount = 1},
 		},
 		results = {{type="item", name="degrader", amount=1}},
 		energy_required = 2,
