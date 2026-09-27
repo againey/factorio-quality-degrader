@@ -1,6 +1,6 @@
 {
 	"name": "quality-degrader",
-	"version": "0.2.0",
+	"version": "0.3.0",
 	"title": "Quality Degrader",
 	"description": "Facilitate early-game quality with a machine that downgrades quality items by a single quality level. It's like manufacturing with mixed quality ingredients, but only if you manage the logistics puzzle effectively.",
 	"author": "Andy Gainey",

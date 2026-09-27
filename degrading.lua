@@ -1,7 +1,5 @@
 local quality = require("__quality-degrader__/quality")
 
-local recipes = data.raw.recipe
-
 local function generate_degrading_recipe_icons_from_item(item)
 	local icons = {}
 	if item.icons == nil then
@@ -50,31 +48,47 @@ local function default_can_degrade_item(item)
 	return true
 end
 
-local function get_recipe_item(recipe)
-	if is_recycling_recipe(recipe) then
-		if #recipe.ingredients ~= 1 then return nil end
-		local ingredient = recipe.ingredients[1]
-		if ingredient.type ~= "item" then return nil end
-		return data.raw.item[ingredient.name]
-	else
-		local item_result = nil
-		for _, result in ipairs(recipe.results) do
-			if result.type == "item" then
-				if item_result ~= nil then return nil end
-				item_result = result
-			end
-		end
-		if item_result == nil then return nil end
-		return data.raw.item[item_result.name]
-	end
-end
-
 local function get_prototype(base_type, name)
+	if defines.prototypes[base_type] == nil then
+		--helpers.write_file("quality-degrader.txt", {"", "No prototypes for base_type = " .. base_type .. "\n"}, true)
+		return nil
+	end
 	for type_name in pairs(defines.prototypes[base_type]) do
 		local prototypes = data.raw[type_name]
 		if prototypes and prototypes[name] then
 			return prototypes[name]
 		end
+	end
+end
+
+local function get_recipe_item(recipe)
+	if is_recycling_recipe(recipe) then
+		if #recipe.ingredients ~= 1 then
+			--helpers.write_file("quality-degrader.txt", {"", "Recycling recipe ingredient count = " .. #recipe.ingredients .. "\n"}, true)
+			return nil
+		end
+		local ingredient = recipe.ingredients[1]
+		if ingredient.type ~= "item" then
+			--helpers.write_file("quality-degrader.txt", {"", "Recycling recipe ingredient type = " .. ingredient.type .. "\n"}, true)
+			return nil
+		end
+		return get_prototype("item", ingredient.name)
+	else
+		local item_result = nil
+		for _, result in ipairs(recipe.results) do
+			if result.type == "item" then
+				if item_result ~= nil then
+					--helpers.write_file("quality-degrader.txt", {"", "More than one recipe result item\n"}, true)
+					return nil
+				end
+				item_result = result
+			end
+		end
+		if item_result == nil then
+			--helpers.write_file("quality-degrader.txt", {"", "No recipe result item\n"}, true)
+			return nil
+		end
+		return get_prototype("item", item_result.name)
 	end
 end
 
@@ -139,7 +153,10 @@ local function generate_degrading_recipes_for_item(item, crafting_machine_tint, 
 	--helpers.write_file("quality-degrader.txt", {"", "Considering item " .. item.name .. "\n"}, true)
 
 	local quality_sequences = quality.get_quality_sequences()
-	if quality_sequences == nil then return end
+	if quality_sequences == nil then
+		--helpers.write_file("quality-degrader.txt", {"", "No quality sequence is available.\n"}, true)
+		return
+	end
 
 	local has_non_trivial_quality_sequence = false
 	for first_quality_name, quality_sequence in pairs(quality_sequences) do
@@ -149,10 +166,16 @@ local function generate_degrading_recipes_for_item(item, crafting_machine_tint, 
 			break
 		end
 	end
-	if has_non_trivial_quality_sequence == false then return end
+	if has_non_trivial_quality_sequence == false then
+		--helpers.write_file("quality-degrader.txt", {"", "No non-trivial quality sequence is available.\n"}, true)
+		return
+	end
 
 	local can_degrade_item = can_degrade_item or default_can_degrade_item
-	if can_degrade_item(item) == false then return end
+	if can_degrade_item(item) == false then
+		--helpers.write_file("quality-degrader.txt", {"", "Cannot degrade item.\n"}, true)
+		return
+	end
 
 	--helpers.write_file("quality-degrader.txt", {"", "Creating recipe " .. item.name .. "-degrading\n"}, true)
 
@@ -223,10 +246,16 @@ end
 local function generate_degrading_recipes_for_recipe(recipe, can_degrade_recipe, can_degrade_item)
 	--helpers.write_file("quality-degrader.txt", {"", "Considering recipe " .. recipe.name .. "\n"}, true)
 	local can_degrade_recipe = can_degrade_recipe or default_can_degrade_recipe
-	if not can_degrade_recipe(recipe) then return end
+	if not can_degrade_recipe(recipe) then
+		--helpers.write_file("quality-degrader.txt", {"", "Cannot degrade recipe.\n"}, true)
+		return
+	end
 
 	local item = get_recipe_item(recipe)
-	if item == nil then return end
+	if item == nil then
+		--helpers.write_file("quality-degrader.txt", {"", "No item is available.\n"}, true)
+		return
+	end
 
 	generate_degrading_recipes_for_item(item, recipe.crafting_machine_tint, can_degrade_item)
 end
