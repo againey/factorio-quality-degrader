@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.0
+Date: 16. 10. 2026
+  Balancing:
+    - Decrease rocket capacity of degrader to 20 to match stack size
+    - Reduce spoilage advancement of degrading recipes from 80% to 20%
+---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 27. 09. 2026
   Bugfixes:
