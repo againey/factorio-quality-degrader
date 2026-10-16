@@ -75,7 +75,7 @@ data:extend{
 		drop_sound = item_sounds.drill_inventory_move,
 		place_result = "degrader",
 		stack_size = 20,
-		weight = 40 * kg,
+		weight = 50 * kg,
 		random_tint_color = item_tints.iron_rust,
 	},
 	{
