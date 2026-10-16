@@ -127,7 +127,7 @@ local function get_recipe_percent_spoiled_for_item(item)
 	if item.spoil_ticks == nil or item.spoil_ticks == 0 then
 		return nil
 	else
-		return 0.8
+		return 0.2
 	end
 end
 
